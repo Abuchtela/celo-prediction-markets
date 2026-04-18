@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE `aiForecasts` (`id` int AUTO_INCREMENT NOT NULL, `marketId` int NOT NULL, `analysis` text NOT NULL, `suggestedOutcomeId` int, `confidence` decimal(5,4) NOT NULL DEFAULT '0.5000', `createdAt` timestamp NOT NULL DEFAULT (now()), CONSTRAINT `aiForecasts_id` PRIMARY KEY(`id`))",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4VD3Zx5k3aKHNPA.b0f4b0f843da --database HWDP77uNRzc87A2t95mUXi --execute CREATE TABLE `aiForecasts` (`id` int AUTO_INCREMENT NOT NULL, `marketId` int NOT NULL, `analysis` text NOT NULL, `suggestedOutcomeId` int, `confidence` decimal(5,4) NOT NULL DEFAULT '0.5000', `createdAt` timestamp NOT NULL DEFAULT (now()), CONSTRAINT `aiForecasts_id` PRIMARY KEY(`id`))",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 220
+}

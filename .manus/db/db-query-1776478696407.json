@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE `bets` (`id` int AUTO_INCREMENT NOT NULL, `userId` int NOT NULL, `marketId` int NOT NULL, `outcomeId` int NOT NULL, `type` enum('buy','sell') NOT NULL, `shares` decimal(18,6) NOT NULL, `pricePerShare` decimal(8,6) NOT NULL, `totalCost` decimal(18,6) NOT NULL, `currency` enum('cUSD','cEUR','cREAL') NOT NULL DEFAULT 'cUSD', `createdAt` timestamp NOT NULL DEFAULT (now()), CONSTRAINT `bets_id` PRIMARY KEY(`id`))",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4VD3Zx5k3aKHNPA.b0f4b0f843da --database HWDP77uNRzc87A2t95mUXi --execute CREATE TABLE `bets` (`id` int AUTO_INCREMENT NOT NULL, `userId` int NOT NULL, `marketId` int NOT NULL, `outcomeId` int NOT NULL, `type` enum('buy','sell') NOT NULL, `shares` decimal(18,6) NOT NULL, `pricePerShare` decimal(8,6) NOT NULL, `totalCost` decimal(18,6) NOT NULL, `currency` enum('cUSD','cEUR','cREAL') NOT NULL DEFAULT 'cUSD', `createdAt` timestamp NOT NULL DEFAULT (now()), CONSTRAINT `bets_id` PRIMARY KEY(`id`))",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 160
+}
