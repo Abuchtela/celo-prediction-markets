@@ -1,9 +1,12 @@
 import { trpc } from "@/lib/trpc";
+import { wagmiConfig } from "@/lib/wagmi";
+import { WalletProvider } from "@/contexts/WalletContext";
 import { UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
+import { WagmiProvider } from "wagmi";
 import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
@@ -53,9 +56,13 @@ const trpcClient = trpc.createClient({
 });
 
 createRoot(document.getElementById("root")!).render(
-  <trpc.Provider client={trpcClient} queryClient={queryClient}>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  </trpc.Provider>
+  <WagmiProvider config={wagmiConfig}>
+    <trpc.Provider client={trpcClient} queryClient={queryClient}>
+      <QueryClientProvider client={queryClient}>
+        <WalletProvider>
+          <App />
+        </WalletProvider>
+      </QueryClientProvider>
+    </trpc.Provider>
+  </WagmiProvider>
 );

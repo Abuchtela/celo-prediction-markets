@@ -3,6 +3,8 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { shortenAddress, formatCurrency } from "@/lib/utils";
+import { useWallet } from "@/contexts/WalletContext";
+import WalletConnectButton from "@/components/WalletConnectButton";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -28,6 +30,7 @@ export default function Navbar() {
   const [location] = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { isConnected: walletConnected } = useWallet();
 
   const { data: wallet } = trpc.trading.wallet.useQuery(undefined, {
     enabled: isAuthenticated,
@@ -64,19 +67,27 @@ export default function Navbar() {
         </div>
 
         {/* Right side */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          {/* On-chain wallet (MiniPay / injected) */}
+          <div className="hidden md:block">
+            <WalletConnectButton />
+          </div>
+
+          {/* Simulated platform balance (shown when logged in) */}
           {isAuthenticated && wallet ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="hidden md:flex items-center gap-2 border-border/60 bg-card hover:bg-accent text-sm">
                   <Wallet className="w-3.5 h-3.5 text-primary" />
                   <span className="font-medium text-foreground">{formatCurrency(wallet.cUSD, "cUSD", 2)}</span>
+                  <Badge variant="secondary" className="text-[9px] px-1 py-0 ml-0.5">Platform</Badge>
                   <ChevronDown className="w-3 h-3 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-64 bg-card border-border">
                 <div className="px-3 py-2">
-                  <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wider">Wallet Balances</p>
+                  <p className="text-xs text-muted-foreground mb-1 font-medium uppercase tracking-wider">Platform Balances</p>
+                  <p className="text-[10px] text-muted-foreground/70 mb-2">Simulated balances for trading on CeloPredict</p>
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium text-foreground">cUSD</span>
@@ -91,8 +102,15 @@ export default function Navbar() {
                       <Badge variant="outline" className="cat-sports font-mono text-xs">{formatCurrency(wallet.cREAL, "", 2)}</Badge>
                     </div>
                   </div>
-                  <div className="mt-3 pt-2 border-t border-border">
-                    <p className="text-xs text-muted-foreground">Address</p>
+                  {walletConnected && (
+                    <div className="mt-3 pt-2 border-t border-border">
+                      <p className="text-[10px] text-muted-foreground/70">
+                        On-chain wallet connected — use the wallet button to view real balances
+                      </p>
+                    </div>
+                  )}
+                  <div className="mt-2 pt-2 border-t border-border">
+                    <p className="text-xs text-muted-foreground">Platform Address</p>
                     <p className="text-xs font-mono text-primary mt-0.5">{shortenAddress(wallet.walletAddress)}</p>
                   </div>
                 </div>
@@ -125,7 +143,7 @@ export default function Navbar() {
             </DropdownMenu>
           ) : (
             <Button size="sm" asChild className="bg-primary text-primary-foreground hover:bg-primary/90 font-medium">
-              <a href={getLoginUrl()}>Connect Wallet</a>
+              <a href={getLoginUrl()}>Sign In</a>
             </Button>
           )}
 
@@ -140,6 +158,10 @@ export default function Navbar() {
       {mobileOpen && (
         <div className="md:hidden border-t border-border bg-card">
           <div className="container py-3 space-y-1">
+            {/* Mobile wallet connect */}
+            <div className="px-3 py-2">
+              <WalletConnectButton />
+            </div>
             {NAV_LINKS.map(({ href, label, icon: Icon }) => (
               <Link key={href} href={href} onClick={() => setMobileOpen(false)}>
                 <span className={cn(

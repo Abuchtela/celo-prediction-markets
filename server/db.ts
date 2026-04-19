@@ -264,3 +264,21 @@ export async function getResolvedMarkets(limit = 10) {
   if (!db) return [];
   return db.select().from(markets).where(eq(markets.status, "resolved")).orderBy(desc(markets.resolvedAt)).limit(limit);
 }
+
+// ─── Market Resolution ────────────────────────────────────────────────────────
+export async function resolveMarket(
+  marketId: number,
+  winningOutcomeId: number,
+  resolutionNote?: string
+) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(markets).set({
+    status: "resolved",
+    resolvedOutcomeId: winningOutcomeId,
+    resolvedAt: new Date(),
+    resolutionCriteria: resolutionNote
+      ? `${resolutionNote}`
+      : undefined,
+  }).where(eq(markets.id, marketId));
+}

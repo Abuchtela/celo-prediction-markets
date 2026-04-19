@@ -14,7 +14,13 @@ import {
   getLatestForecast, saveForecast,
   getResolvedMarkets,
   getUserById,
+  resolveMarket,
 } from "./db";
+import {
+  fetchLivePrices,
+  checkResolutionCondition,
+  getMarketCondition,
+} from "./priceService";
 
 export const appRouter = router({
   system: systemRouter,
@@ -298,6 +304,79 @@ Be direct, data-driven, and reference real-world context. Format as JSON:
       .input(z.object({ limit: z.number().min(1).max(100).optional().default(20) }))
       .query(async ({ input }) => {
         return getLeaderboard(input.limit);
+      }),
+  }),
+
+  // ─── Live Prices ────────────────────────────────────────────────────────────
+  prices: router({
+    live: publicProcedure.query(async () => {
+      const feed = await fetchLivePrices();
+      return {
+        prices: feed.prices,
+        fetchedAt: feed.fetchedAt,
+      };
+    }),
+
+    ticker: publicProcedure.query(async () => {
+      const feed = await fetchLivePrices();
+      const p = feed.prices;
+      return [
+        { id: "bitcoin", symbol: "BTC", price: p["bitcoin"]?.current_price ?? null, change24h: p["bitcoin"]?.price_change_percentage_24h ?? null },
+        { id: "ethereum", symbol: "ETH", price: p["ethereum"]?.current_price ?? null, change24h: p["ethereum"]?.price_change_percentage_24h ?? null },
+        { id: "celo", symbol: "CELO", price: p["celo"]?.current_price ?? null, change24h: p["celo"]?.price_change_percentage_24h ?? null },
+        { id: "solana", symbol: "SOL", price: p["solana"]?.current_price ?? null, change24h: p["solana"]?.price_change_percentage_24h ?? null },
+      ];
+    }),
+
+    /**
+     * Check all open price-based markets and auto-resolve any that have hit
+     * their threshold. Returns a list of resolved market slugs.
+     * This can be called by a cron job or manually.
+     */
+    autoResolve: publicProcedure.mutation(async () => {
+      const feed = await fetchLivePrices();
+      const openMarkets = await getMarkets({ status: "open", limit: 100, offset: 0 });
+      const resolved: string[] = [];
+
+      for (const market of openMarkets) {
+        const condition = getMarketCondition(market.slug);
+        if (!condition) continue;
+
+        // Check if market has already expired
+        if (new Date(market.expiresAt) < new Date()) continue;
+
+        const result = checkResolutionCondition(market.slug, feed.prices);
+        if (!result) continue;
+
+        // Resolve the market
+        const outcomes = await getOutcomesByMarketId(market.id);
+        const winningOutcome = outcomes[result.winningOutcomeIndex];
+        if (!winningOutcome) continue;
+
+        await resolveMarket(market.id, winningOutcome.id, `Auto-resolved: ${condition.coinId} reached $${result.price.toLocaleString()}`);
+        resolved.push(market.slug);
+      }
+
+      return { resolved, checkedAt: new Date() };
+    }),
+
+    marketCondition: publicProcedure
+      .input(z.object({ slug: z.string() }))
+      .query(async ({ input }) => {
+        const condition = getMarketCondition(input.slug);
+        if (!condition) return null;
+        const feed = await fetchLivePrices();
+        const coin = feed.prices[condition.coinId];
+        return {
+          condition,
+          currentPrice: coin?.current_price ?? null,
+          change24h: coin?.price_change_percentage_24h ?? null,
+          thresholdMet: coin
+            ? condition.direction === "above"
+              ? coin.current_price >= condition.threshold
+              : coin.current_price <= condition.threshold
+            : false,
+        };
       }),
   }),
 

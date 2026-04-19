@@ -25,3 +25,18 @@
 - [x] Error handling and empty states
 - [x] Vitest unit tests (12 tests, all passing)
 - [x] GitHub repo: Abuchtela/celo-prediction-markets
+
+## MiniPay & Live Data Integration
+- [ ] Research MiniPay SDK and wagmi/viem Celo integration approach
+- [ ] Install wagmi, viem, @celo/rainbowkit-celo, @rainbow-me/rainbowkit dependencies
+- [ ] Configure wagmi with Celo mainnet and Alfajores testnet chains
+- [ ] Build WalletProvider context wrapping the app with wagmi + RainbowKit
+- [ ] MiniPay detection: auto-connect when window.ethereum is MiniPay
+- [ ] Replace simulated wallet UI with real connected wallet address + on-chain cUSD balance
+- [ ] Read real cUSD/cEUR/cREAL balances from Celo ERC-20 contracts via viem
+- [ ] Backend: CoinGecko price feed endpoint (BTC, ETH, CELO, WTI proxy)
+- [ ] Live price ticker in Navbar for BTC and ETH
+- [ ] Market detail page: show live current price for relevant crypto markets
+- [ ] Auto-resolution trigger: cron job checks CoinGecko prices vs market conditions
+- [ ] Resolution feed updates when auto-resolution fires
+- [ ] Update tests for new wallet and price feed procedures
